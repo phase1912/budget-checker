@@ -1,29 +1,29 @@
 ## Requirement
 
-If the database is unavailable when the backend processes a request, then the backend service shall respond with a generic error message.
+When the application loads, the application shall apply the theme stored in localStorage if a stored preference exists.
 
 ## Rationale
 
-Traces to the requirements-stage `failure-behaviour` answer, applied to the DB-unavailable failure mode. Split from logging (see [[prob-1/concept-1/req-9]]) so each half is independently verifiable.
+Completes the persistence loop for the founder's "persisted across visits" success metric ([[prob-1]]) — persisting a choice is only useful if it is read back on the next visit.
 
 ## Verification
 
-test
+Test: set a theme preference in localStorage, load the application, and assert the applied theme matches the stored value.
 
 ## Traces to
 
-- [[prob-1/concept-1]]
+- [[prob-1/concept-1]] — "Chosen approach", dark mode paragraph
 
 ## Metadata
 
 ```json
 {
-  "id": "ERR-2",
-  "title": "Database unavailability produces a generic error response",
-  "pattern": "unwanted-behaviour",
-  "statement": "If the database is unavailable when the backend processes a request, then the backend service shall respond with a generic error message.",
-  "rationale": "failure-behaviour answer named a dependency being down as a case to handle at basic level.",
-  "priority": "should",
+  "id": "DS-6",
+  "title": "Apply stored theme preference on load",
+  "pattern": "event-driven",
+  "statement": "When the application loads, the application shall apply the theme stored in localStorage if a stored preference exists.",
+  "rationale": "Persisting a theme choice is only useful if it is read back on the next visit.",
+  "priority": "must",
   "verification": "test",
   "traces_to": ["prob-1/concept-1"]
 }

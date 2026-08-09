@@ -1,30 +1,30 @@
 ## Requirement
 
-When the frontend requests the backend's health-check endpoint, the backend service shall respond indicating it is available.
+The application shall render a shared header and footer around the content of every route through a single Layout component.
 
 ## Rationale
 
-Demonstrates the architectural skeleton is functional end-to-end — the frontend and backend are deployed as separate services (per the concept's chosen approach) and can actually talk to each other. The `must-have` answer named "skeleton (backend and frontend stood up, talking to each other)" as required for day one.
+Directly implements the founder's SPA clarification recorded in [[prob-1]]'s Assumptions section: header and footer are persistent chrome, not per-page markup, and [[prob-1/concept-1]] chose the router-ready foundation specifically so this holds for every current and future route.
 
 ## Verification
 
-test
+Demonstration: navigate the running application and confirm the header and footer remain present and unchanged while only the routed content area changes.
 
 ## Traces to
 
-- [[prob-1/concept-1]] — Chosen approach (decoupled backend/frontend architecture)
+- [[prob-1/concept-1]] — "Chosen approach", Layout paragraph
 
 ## Metadata
 
 ```json
 {
-  "id": "SKEL-1",
-  "title": "Backend reachable from frontend",
-  "pattern": "event-driven",
-  "statement": "When the frontend requests the backend's health-check endpoint, the backend service shall respond indicating it is available.",
-  "rationale": "must-have answer named skeleton connectivity between backend and frontend as required for day one.",
+  "id": "DS-2",
+  "title": "Shared Layout renders header and footer",
+  "pattern": "ubiquitous",
+  "statement": "The application shall render a shared header and footer around the content of every route through a single Layout component.",
+  "rationale": "Founder's SPA clarification: header/footer are shared chrome, only content changes between views.",
   "priority": "must",
-  "verification": "test",
+  "verification": "demonstration",
   "traces_to": ["prob-1/concept-1"]
 }
 ```

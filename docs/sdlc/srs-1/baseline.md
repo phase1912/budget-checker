@@ -1,134 +1,108 @@
 ## Purpose
 
-This is the requirements baseline for Budget Checker's "foundation" feature: the architectural skeleton (a decoupled FastAPI backend and a React+MobX frontend), a public static landing page, and a draft database schema (users, receipts, budgets). It is the frozen reference that architecture/design and implementation are built and verified against. Nothing in this document is invented — every requirement, quality attribute, and scenario here is carried forward verbatim from the approved artifacts of the problem, concept, requirements, and acceptance stages of this SDLC process. This is the third SDLC run for this same feature (proc-3): proc-1 completed under the original 5-stage template; proc-2 reproduced the same content under the newly-extended 9-stage template but was aborted at the implementation stage because its check commands (build-v1, typecheck-v1, etc.) were hardcoded to Meridian's own repo layout rather than budget-checker's; the founder fixed the check commands (now parameterized via a maker-answered build-command question) and added an sdlc_abort capability to unblock this restart.
+This document is the requirements baseline for the "Frontend design system" feature — centralized color tokens, a router-ready shared Layout (header/footer), a light/dark theme toggle, and a redesigned landing page. Design and implementation are committed against exactly what is recorded here: every functional requirement, quality attribute, and acceptance scenario below is an approved artifact, copied verbatim, not restated.
 
 ## Scope
 
-**In scope**, per the approved problem brief ([[prob-1]]) and solution concept ([[prob-1/concept-1]]):
-- The architectural skeleton: a FastAPI backend and a React+MobX frontend, deployed as two independent services, able to reach each other.
-- A public static landing page describing the product, requiring no authentication.
-- A draft database schema defining `users`, `receipts`, and `budgets` as entities, designed so a user's data can be deleted without leaving orphaned records (GDPR-adjacent).
-- Basic failure handling for the backend: invalid input, database unavailability, and request timeouts each produce a generic error response and a server-side log entry.
-- Two backend performance/availability targets (warm response time, cold-start recovery time).
+In scope (from [[prob-1]] and [[prob-1/concept-1]]): a single centrally-maintained color theme (Tailwind v4), a router-ready `Layout` component providing shared header/footer across routes, a full light/dark theme with a toggle in the header (persisted, with a two-level fallback), vector UI icons, and a redesigned public landing page.
 
-**Out of scope**, carried forward from [[prob-1]] and [[prob-1/concept-1]]:
-- Receipt-photo recognition (OCR), text parsing of receipts, automatic purchase categorization, duplicate-photo detection.
-- A real user registration/authentication flow — the schema defines a `users` entity, but no login/signup is wired up in this feature.
-- A single-server SSR architecture — excluded because the concept chose a decoupled frontend/backend architecture.
-- Non-PostgreSQL databases — excluded because PostgreSQL was the founder's stated preference for this stage.
+Out of scope (from [[prob-1]]): authentication/login on the landing page (deferred to a separate feature — the backend has no auth infrastructure at all), any authenticated/internal app screens (none exist yet), i18n/localization, and non-essential animation.
 
 ## Definitions
 
-| Term | Meaning in this baseline |
-|---|---|
-| Invalid input | Input that fails validation on a given field or endpoint. Which specific values are invalid per field/endpoint is not yet defined and is deferred to design. |
-| Generic error message | An error response that communicates that a request failed without exposing internal implementation details — no stack traces, no internal identifiers, no framework/library-specific error text. |
-| Database unavailable | The database is unreachable (e.g. connection refused) or fails to respond to a query. Both cases are treated identically by every requirement in this baseline. |
-| Dependent table | A table holding rows that reference a `users` row. Currently: `receipts` and `budgets`. |
-| Orphaned record | A row in a dependent table whose referenced user no longer exists. |
-| Configured timeout | A timeout duration applied to backend request processing. The specific value is not yet chosen. |
-| Warm (backend) | The backend service instance is already running and is not resuming from a free-tier idle sleep. |
-| Resuming from idle sleep / cold start | Recovering from a free-tier hosting provider's practice of stopping an inactive service instance and restarting it on the next request. The specific timing cited in AVAIL-NFR-1 (15-minute inactivity threshold, 30–60s restart) is Render's documented free-tier behavior; it may not directly apply if a different provider is ultimately chosen. |
+A scan of all 11 requirements and the one quality attribute found no domain terms of the ambiguous "valid/active/expired/eligible" class — see the `undefined-terms` answer on this stage. The terms below are defined for a reader outside this process, not because they were ambiguous within it:
+
+- **Theme configuration** — the single, centrally maintained definition of every color used in the UI (implemented as a Tailwind v4 theme), referenced by components rather than hard-coded.
+- **Token** — one named color entry within the theme configuration (e.g. "primary", "error"), with a distinct value per theme variant.
+- **Layout** — the shared component that renders the header and footer around whatever route is currently active; the root layout route in the router.
+- **Theme toggle** — the control in the header that switches the active theme between light and dark.
+- **Stored preference** — the visitor's theme choice as persisted in `localStorage`, read back on subsequent visits.
 
 ## Functional requirements
 
-### LAND-1 — Public landing page access
-**Statement:** When an anonymous visitor requests the landing page, the frontend application shall display the product description without requiring authentication.
-**Priority:** must · **Verification:** demonstration · **Source:** [[prob-1/concept-1/req-1]]
+### DS-1 — Single source of truth for color tokens
+- **Statement (ubiquitous):** The frontend shall define every color value used in the UI within a single, centrally maintained theme configuration.
+- **Priority:** must · **Verification:** inspection
 
-### SKEL-1 — Backend reachable from frontend
-**Statement:** When the frontend requests the backend's health-check endpoint, the backend service shall respond indicating it is available.
-**Priority:** must · **Verification:** test · **Source:** [[prob-1/concept-1/req-2]]
+### DS-2 — Shared Layout renders header and footer
+- **Statement (ubiquitous):** The application shall render a shared header and footer around the content of every route through a single Layout component.
+- **Priority:** must · **Verification:** demonstration
 
-### DATA-1 — Draft DB schema defines core entities
-**Statement:** The database schema shall define entities for users, receipts, and budgets.
-**Priority:** must · **Verification:** inspection · **Source:** [[prob-1/concept-1/req-3]]
+### DS-3 — Router mounts Landing at root path
+- **Statement (ubiquitous):** The router shall mount the Landing page as the content of the Layout at the root path.
+- **Priority:** must · **Verification:** test
 
-### DATA-2 — DB schema supports deleting a user's data
-**Statement:** The database schema shall support deletion of a user's data without leaving orphaned records in dependent tables.
-**Priority:** must · **Verification:** analysis · **Source:** [[prob-1/concept-1/req-4]]
+### DS-4 — Header exposes theme toggle
+- **Statement (ubiquitous):** The header shall provide a control that toggles the application between light and dark theme.
+- **Priority:** must · **Verification:** demonstration
 
-### ERR-1 — Invalid input produces a generic error response
-**Statement:** If the backend receives invalid input on an API request, then the backend service shall respond with a generic error message.
-**Priority:** should · **Verification:** test · **Source:** [[prob-1/concept-1/req-5]]
+### DS-5 — Theme toggle switches the active theme
+- **Statement (event-driven):** When the user activates the theme toggle, the application shall switch the active theme between light and dark.
+- **Priority:** must · **Verification:** test
 
-### ERR-2 — Database unavailability produces a generic error response
-**Statement:** If the database is unavailable when the backend processes a request, then the backend service shall respond with a generic error message.
-**Priority:** should · **Verification:** test · **Source:** [[prob-1/concept-1/req-6]]
+### DS-6 — Apply stored theme preference on load
+- **Statement (event-driven):** When the application loads, the application shall apply the theme stored in localStorage if a stored preference exists.
+- **Priority:** must · **Verification:** test
 
-### ERR-3 — Timeout produces a generic error response
-**Statement:** If a request to the backend exceeds the configured timeout, then the backend service shall respond with a generic error message.
-**Priority:** should · **Verification:** test · **Source:** [[prob-1/concept-1/req-7]]
+### DS-7 — Fallback to OS theme preference
+- **Statement (unwanted-behaviour):** If localStorage is unavailable or contains no stored theme preference, then the application shall apply the operating system's prefers-color-scheme setting.
+- **Priority:** must · **Verification:** test
 
-### ERR-4 — Invalid input is logged server-side
-**Statement:** If the backend receives invalid input on an API request, then the backend service shall record the failure in its server-side logs.
-**Priority:** should · **Verification:** test · **Source:** [[prob-1/concept-1/req-8]]
+### DS-8 — Default to light theme
+- **Statement (unwanted-behaviour):** If neither a stored theme preference nor an operating system color-scheme preference is available, then the application shall apply the light theme.
+- **Priority:** must · **Verification:** test
 
-### ERR-5 — Database unavailability is logged server-side
-**Statement:** If the database is unavailable when the backend processes a request, then the backend service shall record the failure in its server-side logs.
-**Priority:** should · **Verification:** test · **Source:** [[prob-1/concept-1/req-9]]
+### DS-9 — UI icons rendered as vector graphics
+- **Statement (ubiquitous):** The application shall render every UI icon, including the theme toggle icon, as a vector graphic that visually distinguishes each icon's meaning.
+- **Priority:** must · **Verification:** inspection
 
-### ERR-6 — Timeout is logged server-side
-**Statement:** If a request to the backend exceeds the configured timeout, then the backend service shall record the failure in its server-side logs.
-**Priority:** should · **Verification:** test · **Source:** [[prob-1/concept-1/req-10]]
+### DS-10 — Landing page styled with token palette
+- **Statement (ubiquitous):** The Landing page shall present its content styled with the Tailwind theme tokens instead of the current unstyled markup.
+- **Priority:** must · **Verification:** demonstration
+- **Note:** this statement names "Tailwind" specifically — the same implementation-detail leak that was caught and fixed in DS-1 and DS-9 during their review pass, but missed for DS-10 at the time. Per this stage's instruction to copy approved requirements verbatim rather than rewrite them, the wording is reproduced as approved; the fix is listed under Open questions and assumptions as a fast-follow.
+
+### DS-11 — Theme toggle persists choice to localStorage
+- **Statement (event-driven):** When the user activates the theme toggle, the application shall persist the resulting theme to localStorage.
+- **Priority:** must · **Verification:** test
 
 ## Quality attributes
 
-### PERF-NFR-1 — Backend warm response time
-**Statement:** While the backend service is warm (not in a cold-start state), the backend service shall respond to a health-check request within 300 ms.
-**Measure:** metric = response time for `GET /health`; threshold = 300 ms; conditions = single request, instance already warm, free-tier hosting.
-**Priority:** should · **Verification:** test · **Source:** [[prob-1/concept-1/qa-1]] — threshold proposed by the maker in proc-1, confirmed by the founder there, reconfirmed unchanged across proc-2 and this run.
-
-### AVAIL-NFR-1 — Backend cold-start recovery time
-**Statement:** While the backend service is resuming from a free-tier idle sleep, the backend service shall become responsive to a health-check request within 60 seconds.
-**Measure:** metric = time to first successful health-check response after idle sleep; threshold = 60 seconds; conditions = after at least 15 minutes of inactivity on the free-tier host.
-**Priority:** should · **Verification:** test · **Source:** [[prob-1/concept-1/qa-2]] — threshold proposed by the maker in proc-1 from researched Render free-tier behavior, confirmed by the founder there, reconfirmed unchanged across proc-2 and this run.
+### DS-NFR-1 — WCAG AA contrast for token palette
+- **Statement (state-driven):** While the color token palette is used to render text against a background, the frontend shall maintain a contrast ratio that meets WCAG 2.1 AA.
+- **Metric:** contrast ratio between each token's foreground/text color and its intended background color
+- **Threshold:** at least 4.5:1 for normal-size text, at least 3:1 for large-scale text
+- **Conditions:** evaluated for every token pairing intended for text-on-background use, in both the light and dark theme variants
+- **Priority:** must · **Verification:** analysis
+- **Note:** the 4.5:1 figure was shown to and explicitly selected by the founder. The 3:1 large-text companion figure is the standard WCAG 2.1 AA pairing, added by the maker when drafting this artifact and not separately confirmed — see Open questions and assumptions.
 
 ## Acceptance scenarios
 
-Each functional requirement's scenarios are lifted verbatim into a standalone `.feature` file, registered alongside this document:
+Each requirement's Gherkin scenarios are lifted verbatim into their own feature file:
 
 | Requirement | Feature file |
 |---|---|
-| LAND-1 | `features/LAND-1.feature` (2 scenarios) |
-| SKEL-1 | `features/SKEL-1.feature` (1 scenario) |
-| DATA-1 | `features/DATA-1.feature` (2 scenarios) |
-| DATA-2 | `features/DATA-2.feature` (2 scenarios) |
-| ERR-1 | `features/ERR-1.feature` (1 scenario outline, 3 examples) |
-| ERR-2 | `features/ERR-2.feature` (2 scenarios) |
-| ERR-3 | `features/ERR-3.feature` (2 scenarios) |
-| ERR-4 | `features/ERR-4.feature` (2 scenarios) |
-| ERR-5 | `features/ERR-5.feature` (2 scenarios) |
-| ERR-6 | `features/ERR-6.feature` (3 scenarios) |
+| DS-1 | `features/DS-1.feature` |
+| DS-2 | `features/DS-2.feature` |
+| DS-3 | `features/DS-3.feature` |
+| DS-4 | `features/DS-4.feature` |
+| DS-5 | `features/DS-5.feature` |
+| DS-6 | `features/DS-6.feature` |
+| DS-7 | `features/DS-7.feature` |
+| DS-8 | `features/DS-8.feature` |
+| DS-9 | `features/DS-9.feature` |
+| DS-10 | `features/DS-10.feature` |
+| DS-11 | `features/DS-11.feature` |
 
-PERF-NFR-1 and AVAIL-NFR-1 have no `.feature` file — see Open questions and assumptions.
+DS-NFR-1 has no feature file: it is a quality attribute verified by `analysis`, which legitimately has no Gherkin scenario.
 
 ## Traceability matrix
 
-See `traceability-matrix.md` for the full table.
-
-| Requirement | Traces up to | Priority | Verification | Scenarios |
-|---|---|---|---|---|
-| LAND-1 [[prob-1/concept-1/req-1]] | [[prob-1/concept-1]] → [[prob-1]] | must | demonstration | [[prob-1/concept-1/req-1/feature-1]] (2 scenarios) |
-| SKEL-1 [[prob-1/concept-1/req-2]] | [[prob-1/concept-1]] → [[prob-1]] | must | test | [[prob-1/concept-1/req-2/feature-1]] (1 scenario) |
-| DATA-1 [[prob-1/concept-1/req-3]] | [[prob-1/concept-1]] → [[prob-1]] | must | inspection | [[prob-1/concept-1/req-3/feature-1]] (2 scenarios) |
-| DATA-2 [[prob-1/concept-1/req-4]] | [[prob-1/concept-1]] → [[prob-1]] | must | analysis | [[prob-1/concept-1/req-4/feature-1]] (2 scenarios) |
-| ERR-1 [[prob-1/concept-1/req-5]] | [[prob-1/concept-1]] → [[prob-1]] | should | test | [[prob-1/concept-1/req-5/feature-1]] (1 outline, 3 examples) |
-| ERR-2 [[prob-1/concept-1/req-6]] | [[prob-1/concept-1]] → [[prob-1]] | should | test | [[prob-1/concept-1/req-6/feature-1]] (2 scenarios) |
-| ERR-3 [[prob-1/concept-1/req-7]] | [[prob-1/concept-1]] → [[prob-1]] | should | test | [[prob-1/concept-1/req-7/feature-1]] (2 scenarios) |
-| ERR-4 [[prob-1/concept-1/req-8]] | [[prob-1/concept-1]] → [[prob-1]] | should | test | [[prob-1/concept-1/req-8/feature-1]] (2 scenarios) |
-| ERR-5 [[prob-1/concept-1/req-9]] | [[prob-1/concept-1]] → [[prob-1]] | should | test | [[prob-1/concept-1/req-9/feature-1]] (2 scenarios) |
-| ERR-6 [[prob-1/concept-1/req-10]] | [[prob-1/concept-1]] → [[prob-1]] | should | test | [[prob-1/concept-1/req-10/feature-1]] (3 scenarios) |
-| PERF-NFR-1 [[prob-1/concept-1/qa-1]] | [[prob-1/concept-1]] → [[prob-1]] | should | test | none — see Open questions |
-| AVAIL-NFR-1 [[prob-1/concept-1/qa-2]] | [[prob-1/concept-1]] → [[prob-1]] | should | test | none — see Open questions |
+See `traceability-matrix.md`.
 
 ## Open questions and assumptions
 
-- **No numeric thresholds beyond PERF-NFR-1 and AVAIL-NFR-1 exist.** Treat them as maker-proposed-and-founder-confirmed assumptions, not independently-derived targets.
-- **PERF-NFR-1 and AVAIL-NFR-1 have no acceptance scenario.** Not yet backed by any concrete test artifact — to be picked up during implementation/verification.
-- **The founder's AWS free-tier eligibility is unverified.** Only the founder can check their own AWS Billing/Free Tier dashboard.
-- **The specific DB/hosting provider is still open.** PostgreSQL was chosen as the engine; exact provider (Supabase, Render, Neon, or AWS RDS free tier) deferred to the implementation stage.
-- **Frontend behavior when the backend is completely unreachable is not specified.** SKEL-1 only requires the backend to respond when it can be reached.
-- **Per-field/per-endpoint validation rules ("what counts as invalid input") do not exist yet.**
-- **The cold-start definition (AVAIL-NFR-1) is tied to Render's specific free-tier behavior.** May need revisiting if a different provider is chosen.
-- **This baseline reproduces two prior completed/aborted processes under the now-corrected 9-stage template.** proc-1 completed under the original 5-stage template; proc-2 reached this same baseline stage under the extended template but was aborted when its implementation-stage checks (build-v1, typecheck-v1, etc.) proved to be hardcoded to Meridian's own repo layout rather than budget-checker's. The founder fixed those check commands (now parameterized via a maker-answered `build-command` question, confirmed empirically against a fresh index showing zero code exists yet) and added an `sdlc_abort` capability specifically to unblock this restart (proc-3).
+- **DS-12 (not yet a registered requirement) — dark-variant token coverage.** Agreed with the founder while analyzing DS-1 during acceptance: "The theme configuration shall define a distinct value for both the light and dark variant of every color token used in the UI." This closes a real gap — DS-4 through DS-8 govern the toggle's mechanics, but nothing previously required the palette to actually differ between themes. It could not be registered as a formal `requirement` artifact from within the acceptance stage (that stage only accepts `acceptance_spec`). The founder confirmed baselining now with this named as an open gap, to be formally added — with its own acceptance scenario — in a fast-follow pass before implementation touches dark-mode token values.
+- **DS-13 (not yet a registered requirement) — not-found page for unmatched routes.** Agreed with the founder while analyzing DS-3: introducing a router means an unmatched path (typo, stale bookmark) is now reachable where it wasn't before. The founder wants a dedicated not-found page, with unmatched routes redirecting to it, rendered inside the shared Layout. Same registration limitation as DS-12 applies; same fast-follow commitment.
+- **DS-10 wording.** Names "Tailwind" directly in its EARS statement, an implementation detail that should have been generalized the way DS-1 and DS-9 were. Reproduced verbatim per this stage's rules; fix alongside DS-12/DS-13.
+- **DS-NFR-1's 3:1 large-text threshold.** Proposed by the maker as the standard WCAG 2.1 AA companion to the founder-confirmed 4.5:1 normal-text figure, not separately shown to or confirmed by the founder. Should be treated as an assumption until explicitly confirmed.
+- **No other hedged or unresolved answers were found** across any stage — every other question was answered decisively by the founder (see `unresolved-questions` on this branch and the recorded decisions in `sdlc_history`).

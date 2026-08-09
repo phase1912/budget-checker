@@ -1,58 +1,63 @@
-# Solution Concept: Budget Checker — фундамент проекта
+# Solution Concept: Frontend Design System Foundation
 
-Производный документ от [[prob-1]] (Problem Brief).
+Derived from [[prob-1]], specifically the [[prob-1]] "SPA/shared-layout" assumption and the founder's success metrics (single source of truth for color, redesigned landing page, working dark-mode toggle).
 
 ## Options considered
 
-### Option 1 — Разделённые backend/frontend (decoupled)
-Отдельный сервис FastAPI (только API, без рендеринга страниц) и отдельное React+MobX SPA (включает статический лендинг), деплой как два независимых процесса на бесплатных тарифах (например: backend на Render/Railway, frontend на Vercel/Netlify), связь по REST + CORS. БД — PostgreSQL на бесплатном тарифе (провайдер — Supabase/Render/Neon/AWS RDS free tier, конкретика на стадии архитектуры).
-Стоимость относительно заявленного аппетита (месяц+): укладывается — два деплой-пайплайна и настройка CORS занимают дни, не недели, оставшееся время уходит на саму архитектуру/схему БД.
-Что теряется: больше движущихся частей, чем в монолите — два бесплатных тарифа, оба со своими лимитами (в частности, backend-сервис на бесплатном тарифе типа Render засыпает и даёт задержку на первый запрос — см. Risks), CORS-конфигурация как источник ранних багов.
-Что будет, если передумать позже: относительно дёшево вынести один из сервисов на другой хостинг (интерфейс между ними — HTTP API), но объединить их обратно в один процесс потребует переписать способ раздачи фронтенда.
+### Option A — Do nothing (baseline)
 
-### Option 2 — Один сервис (monolith-lite)
-Один репозиторий/деплой: FastAPI отдаёт и API, и собранный React-билд как статику (один процесс, один бесплатный хостинг, например Render).
-Стоимость: дешевле в деплое (один сервис вместо двух), меньше конфигурации на старте.
-Что теряется: смешение ответственностей backend/frontend, меньше похоже на то, как обычно устроены продакшн-приложения с этим стеком — актуально, так как проект защищается как диплом. Не факт, что соответствует ожиданиям программы GoIt, которая, судя по всему, учит именно раздельному FastAPI+React стеку.
-Что будет, если передумать позже: разделение на два сервиса потом потребует вынести раздачу статики из FastAPI и настроить отдельный деплой фронтенда — не катастрофично, но это рефакторинг, а не конфигурация.
+Leave `frontend/src/pages/Landing.tsx` as bare unstyled JSX. Costs nothing today. Rejected as the actual plan, but kept as the reference point: this is exactly the state [[prob-1]] describes as the problem, and its "Cost of inaction" section is the argument against it — technical debt keeps compounding as more screens are added.
 
-### Option 3 — Ничего не делать сейчас / только статический лендинг
-Не трогать backend и БД в этой фиче вообще — только статическая страница (plain HTML/CSS или статический экспорт React) без API и без схемы БД.
-Стоимость: минимальная, дни, а не недели.
-Что теряется: не покрывает уже подтверждённый scope из [[prob-1]] (пункт Out of scope брифа явно включает в «фундамент» архитектурный skeleton и черновую схему БД) — то есть это не альтернатива, реализующая проблему, а откат самого решения о scope, принятого на предыдущей стадии.
-Что будет, если передумать позже: ничего не теряется технически (нечего откатывать), но фактически откладывает выполнение уже согласованного объёма работ.
+### Option B — Minimal Layout, no router
+
+Add Tailwind + design tokens, wrap `<Landing/>` in a `Layout` component (header + footer + content slot) directly inside `App.tsx`, with no routing library. Cheapest option that still satisfies the SPA/shared-chrome requirement for exactly one page. Cost: roughly 1 day less than Option C, since there's no router to wire up. Gives up: nothing today, but the moment a second real page exists, `App.tsx` has to be restructured to introduce a router and re-home the `Layout` as its root — the exact rework [[prob-1]]'s "Cost of inaction" section warns about, just deferred one layer.
+
+### Option C — Router-ready foundation (chosen)
+
+Same Tailwind + token work as Option B, plus `react-router` added now: `Layout` becomes the root layout route (an `<Outlet/>` for content), with a single route (`/`) rendering `Landing` today. Cost: one extra dependency and roughly half a day of routing setup on top of Option B, still comfortably inside the founder's "a few days" appetite. Gives up: marginally more code to review today for a capability (routing) not yet used by a second page.
 
 ## Chosen approach
-Выбран **Option 1 — разделённые backend/frontend**, и это прямое решение автора (не только рекомендация): отдельный FastAPI-сервис (только API) и отдельное React+MobX SPA (включает лендинг), задеплоенные как два независимых сервиса на бесплатных тарифах, связанные по REST API с настроенным CORS. Автор предпочёл этот вариант монолиту и статике-без-бэкенда за то, что он ближе к тому, как устроены реальные продакшн-приложения на этом стеке (важно для защиты дипломной работы), и за то, что он полностью покрывает уже согласованный scope фичи «фундамент» (skeleton + черновая схема БД), в отличие от статического-only варианта. База данных — PostgreSQL на бесплатном тарифе; конкретный провайдер (Supabase/Render/Neon или AWS RDS free tier — у автора уже есть аккаунт AWS) определяется на стадии архитектуры/дизайна, не здесь. Решение подтверждено без изменений в третьем прогоне этого же SDLC-процесса.
+
+Option C. Concretely:
+
+- **Tokens**: a Tailwind v4 theme (CSS-first `@theme` block, via the official `@tailwindcss/vite` plugin) defines the full color system — green primary/success, indigo accent, semantic error/warning/info, and a neutral gray scale — plus light/dark variants, as CSS custom properties. This is the "one place" the founder asked for: no component defines its own color value.
+- **Layout**: `react-router` is added with `Layout` as the root layout route (rendering the shared header + footer around an `<Outlet/>`), and a single route mounting `Landing` at `/`. Header contains the dark-mode toggle.
+- **Dark mode**: implemented via a `dark` class on `<html>` toggled by the header control, with token CSS variables overridden under `.dark`; the choice persists in `localStorage` and is read on load to avoid a flash of the wrong theme.
+- **Icons**: `lucide-react` supplies the toggle icon (and any other UI icons this feature needs) instead of a hand-built SVG sprite.
+- **Landing page**: redesigned to use the new header/footer/tokens instead of bare JSX, closing the founder's success metric on landing-page redesign.
+
+This does not specify component file layout, token naming, or the exact route table — that is requirements/design work for the next stage.
 
 ## Why not the alternatives
-**Option 2 (monolith-lite) отклонён**, потому что он экономит только на деплой-конфигурации (один сервис вместо двух), но ценой смешивания backend и frontend ответственностей — а именно чёткое разделение и есть то, что обычно демонстрируют в подобных дипломных/учебных проектах с этим стеком, и то, что, судя по стеку (FastAPI отдельно + React отдельно + MobX), задаёт программа GoIt. При аппетите «месяц и больше» экономия нескольких дней на конфигурации не перевешивает это.
 
-**Option 3 (ничего не делать / только лендинг) отклонён**, потому что он не решает то, что уже было согласовано и подтверждено на стадии problem: в scope фичи «фундамент» явно входят архитектурный skeleton и черновая схема БД (см. [[prob-1]], раздел Out of scope). Выбор Option 3 означал бы молча сузить уже подтверждённый scope, а не предложить более дешёвый способ его выполнить.
+**Option A (do nothing):** directly contradicts the problem this feature exists to solve — [[prob-1]] establishes that leaving the frontend unstyled has a real, growing cost, and the founder's own success metrics require a shipped color system and redesigned landing page, neither of which "do nothing" produces.
+
+**Option B (minimal Layout, no router):** saves perhaps half a day now but reintroduces the exact kind of rework [[prob-1]]'s Assumptions section flags — the founder was specific that header/footer must be shared SPA chrome, and the cheapest way to guarantee that stays true as pages are added is to let the router own the layout boundary from the start, not retrofit it later. Given the founder's confirmed appetite ("a few days") comfortably covers the extra half-day, and reversibility is confirmed to be high either way, there's no real upside to deferring it.
+
+**Tailwind v3 (rejected sub-choice within the chosen option):** more mature ecosystem and more existing tutorials, but requires a separate `tailwind.config.ts` plus PostCSS/autoprefixer wiring. Tailwind v4's CSS-native `@theme` and its official Vite plugin is less configuration surface for a project with strict TypeScript and no existing PostCSS pipeline to preserve, and CSS-variable-based tokens map directly onto the dark-mode variable-override approach chosen here.
+
+**Custom SVG sprite (rejected sub-choice within the chosen option):** gives full control over icon appearance, but means drawing or sourcing every icon by hand for a "few days" appetite feature. `lucide-react` is tree-shakeable, has official React components, and already covers the icons this feature needs (theme toggle, and whatever the landing redesign turns out to want).
 
 ## Constraints
-- Стек задан программой GoIt и не обсуждается: backend — Python + FastAPI, frontend — React + MobX (ответ на вопрос constraints).
-- Бюджет на хостинг и БД — 0: всё должно работать на бесплатных тарифах (ответ на вопрос constraints).
-- У автора уже есть аккаунт AWS — AWS free tier явно рассматривается как один из кандидатов для хостинга/БД наравне с Supabase/Render/Neon, конкретный выбор — на стадии архитектуры.
-- Аппетит по времени — месяц и больше (ответ на вопрос appetite).
-- Ожидание — решить архитектуру и направление схемы БД окончательно уже сейчас, не как черновик (ответ на вопрос reversibility).
+
+- No deadline, no dependency budget, no mandated Tailwind version, no hosting/deploy requirement — founder confirmed "no constraints — full freedom" (answer to `constraints`).
+- Appetite is "a few days" (answer to `appetite`) — this ruled out heavier options like building a full component-library package or a custom design-tooling pipeline, neither of which was seriously considered given that budget.
 
 ## Assumptions
-- Два независимых бесплатных сервиса (backend + frontend) можно держать бесплатными без трафик-платежей при нагрузке уровня студенческого/демо-проекта — *проверено ранее*: Render free-тариф не берёт денег за трафик в этом масштабе, ограничение не денежное, а в поведении (см. Risks).
-- Backend на бесплатном тарифе Render «засыпает» после простоя и даёт задержку на первый запрос — *проверено ранее веб-поиском*: спит после 15 минут бездействия, повторный запуск — 30–60 секунд.
-- CORS между раздельно захостенными frontend и backend управляем на этом масштабе без значимых архитектурных сложностей — стандартная практика.
-- AWS free tier автора действительно покрывает нужные сервисы (RDS/хостинг) без ограничения по времени или использованию — *только выяснится позже*, зависит от возраста аккаунта AWS и статуса free tier автора; требует проверки в AWS Billing / Free Tier dashboard самим автором.
-- Полноценная авторизация не понадобится на этом этапе (черновая схема БД включает users, но без реального auth-флоу) — *только выяснится позже*.
+
+- The `frontend/package.json` toolchain (Vite, React 18, TypeScript, MobX, Vitest) stays as-is; nothing here requires a framework change. *Cheap to check now* — confirmed by reading `package.json` directly.
+- `react-router`'s current major version integrates cleanly with Vite + React 18 + strict TypeScript with no special configuration. *Cheap to check now* — should be verified during implementation by actually installing and building, not assumed indefinitely.
+- Tailwind v4's `@tailwindcss/vite` plugin needs no PostCSS config of its own, since none exists in this project to conflict with. *Cheap to check now.*
+- Dark mode via a `.dark` class + CSS variable overrides will be sufficient for this feature's scope (landing page only); it is not yet known whether this pattern holds up once authenticated app screens exist. *Only discoverable later*, explicitly out of scope for this feature per [[prob-1]].
 
 ## Risks
-- Лимиты бесплатных тарифов (засыпание backend-сервиса на Render free tier после 15 минут простоя, холодный старт 30–60 сек) могут сделать задеплоенную демку медленной или недоступной именно в момент защиты диплома. Ранний сигнал: замерить реальную задержку холодного старта задеплоенного backend заранее.
-- Два независимых деплоя вместо одного — больше точек отказа для соло-автора. Ранний сигнал: сколько времени в первую неделю уходит на отладку деплой-конфигурации относительно времени на архитектуру/схему.
-- AWS free tier может оказаться недоступен или ограничен по времени. Ранний сигнал: автор проверяет статус своего аккаунта в AWS Billing / Free Tier dashboard до того, как архитектурная стадия окончательно выберет AWS.
-- Неверная настройка CORS между двумя разными origin — частый ранний баг при таком разделении. Ранний сигнал: первый успешный кросс-доменный запрос от задеплоенного frontend к задеплоенному backend.
+
+- **Tailwind v4 is newer** than v3; less community troubleshooting content exists if something in the Vite plugin misbehaves. Early sign it's a problem: the dev server or build fails when wiring the plugin in — if that happens for more than an hour of debugging, falling back to Tailwind v3 is cheap given confirmed high reversibility.
+- **Introducing a router for one page** could look like premature architecture to a future reviewer. Mitigated by [[prob-1]]'s explicit SPA/shared-layout assumption, which the founder confirmed came from a deliberate architectural decision, not a guess.
+- **Dark mode scope creep**: "full dark theme" could expand to cover interactions this feature didn't anticipate (e.g. form controls, focus states) if the landing page redesign turns out more elaborate than expected. Early sign: implementation taking noticeably longer than the "few days" appetite — should trigger a check-in rather than silently expanding scope.
 
 ## Out of scope
-Перенесено из [[prob-1]]: распознавание чеков по фото (OCR), парсинг текста из чеков, автоматическая категоризация покупок, обнаружение дублей одного и того же чека, полноценная регистрация/авторизация пользователей (реальный auth-флоу).
 
-Дополнительно исключено этим архитектурным выбором:
-- SSR-подход с одним общим сервером — исключён, так как frontend уже определён как отдельное React+MobX SPA.
-- Не-PostgreSQL базы данных — исключены, так как PostgreSQL был явным предпочтением автора для этого этапа.
+Carried forward from [[prob-1]]: auth/login on the landing page (separate feature), authenticated/internal app screens (don't exist yet), i18n/localization, non-essential animation.
+
+Newly excluded by this concept: any component library or design-tooling package beyond Tailwind config + a handful of shared components (Layout, Header, Footer, ThemeToggle) — building a general-purpose UI kit is bigger than "a few days" and isn't what the founder asked for.

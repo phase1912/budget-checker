@@ -1,28 +1,22 @@
 ## Feature
 
-Database unavailability produces a generic error response
+Apply stored theme preference on load
 
 ## Narrative
 
-As a caller of the Budget Checker API
-I want a clear, generic error when the database can't be reached
-So that I see a sensible failure instead of a hang or a leaked internal error
+As a returning visitor
+I want the site to load in the theme I chose last time
+So that I don't have to re-select it every visit
 
 ## Scenarios
 
 ```gherkin
-Feature: Database unavailability produces a generic error response
+Feature: Apply stored theme preference on load
 
-  Scenario: A request fails gracefully when the database is unavailable
-    Given the database is unavailable
-    When Sam sends an API request that requires the database
-    Then the backend responds with a generic error message
-    And the response does not expose internal implementation details
-
-  Scenario: The database becoming unavailable mid-request still fails gracefully
-    Given the database becomes unavailable while Sam's request is being processed
-    When the backend cannot complete the request
-    Then the backend responds with a generic error message
+  Scenario: A stored preference is applied on load
+    Given the dark theme is stored as the visitor's preference
+    When the application loads
+    Then the dark theme is the active theme
 ```
 
 ## Traceability

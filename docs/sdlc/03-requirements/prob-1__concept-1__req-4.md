@@ -1,30 +1,30 @@
 ## Requirement
 
-The database schema shall support deletion of a user's data without leaving orphaned records in dependent tables.
+The header shall provide a control that toggles the application between light and dark theme.
 
 ## Rationale
 
-Traces to the requirements-stage `compliance` answer: a GDPR-adjacent requirement that the schema must allow deleting a user's data. Dependent tables are records that reference a user (e.g. their receipts and budgets) — deleting the user must not leave unreferenced rows behind.
+Directly serves the founder's success metric in [[prob-1]]: a working light/dark theme toggle in the header, which [[prob-1]]'s Out of scope section confirms was deliberately pulled into scope rather than deferred.
 
 ## Verification
 
-analysis
+Demonstration: locate the toggle control in the rendered header and confirm it is present and interactive.
 
 ## Traces to
 
-- [[prob-1/concept-1]] — Constraints
+- [[prob-1/concept-1]] — "Chosen approach", dark mode paragraph
 
 ## Metadata
 
 ```json
 {
-  "id": "DATA-2",
-  "title": "DB schema supports deleting a user's data",
+  "id": "DS-4",
+  "title": "Header exposes theme toggle",
   "pattern": "ubiquitous",
-  "statement": "The database schema shall support deletion of a user's data without leaving orphaned records in dependent tables.",
-  "rationale": "compliance answer: draft schema must account for the ability to delete user data (right-to-erasure-style design consideration).",
+  "statement": "The header shall provide a control that toggles the application between light and dark theme.",
+  "rationale": "Founder's success metric: a working light/dark theme toggle in the header.",
   "priority": "must",
-  "verification": "analysis",
+  "verification": "demonstration",
   "traces_to": ["prob-1/concept-1"]
 }
 ```

@@ -1,16 +1,3 @@
-## Feature
-
-Centralized color tokens
-
-## Narrative
-
-As the person maintaining this frontend
-I want every color to come from one theme configuration
-So that changing a color is a single edit and no component invents its own value
-
-## Scenarios
-
-```gherkin
 Feature: Centralized color tokens
 
   Scenario: A component uses a color from the theme configuration
@@ -28,8 +15,3 @@ Feature: Centralized color tokens
     Given the full frontend source
     When it is searched for hex or rgb color literals outside the theme configuration
     Then no such literal is found
-```
-
-## Traceability
-
-Verifies [[prob-1/concept-1/req-1]].

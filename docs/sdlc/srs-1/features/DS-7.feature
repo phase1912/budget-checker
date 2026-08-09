@@ -1,16 +1,3 @@
-## Feature
-
-Fallback to OS theme preference
-
-## Narrative
-
-As a first-time visitor with no saved preference
-I want the site to match my system's light/dark setting
-So that it looks right without me having to configure anything
-
-## Scenarios
-
-```gherkin
 Feature: Fallback to OS theme preference
 
   Scenario Outline: No stored preference exists, so the OS preference is applied
@@ -29,8 +16,3 @@ Feature: Fallback to OS theme preference
     And the operating system reports a light-mode preference
     When the application loads
     Then the light theme is applied
-```
-
-## Traceability
-
-Verifies [[prob-1/concept-1/req-7]].
