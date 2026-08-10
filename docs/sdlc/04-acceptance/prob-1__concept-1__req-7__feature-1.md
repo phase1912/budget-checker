@@ -1,34 +1,27 @@
 ## Feature
 
-Fallback to OS theme preference
+Timeout produces a generic error response
 
 ## Narrative
 
-As a first-time visitor with no saved preference
-I want the site to match my system's light/dark setting
-So that it looks right without me having to configure anything
+As a caller of the Budget Checker API
+I want a clear, generic error when my request takes too long
+So that I am not left waiting indefinitely with no feedback
 
 ## Scenarios
 
 ```gherkin
-Feature: Fallback to OS theme preference
+Feature: Timeout produces a generic error response
 
-  Scenario Outline: No stored preference exists, so the OS preference is applied
-    Given no theme preference is stored
-    And the operating system reports a <preference> preference
-    When the application loads
-    Then the <preference> theme is applied
+  Scenario: A request exceeding the timeout receives a generic error
+    Given Sam sends a request to the backend
+    When the request exceeds the configured timeout
+    Then the backend responds with a generic error message
 
-    Examples:
-      | preference |
-      | light      |
-      | dark       |
-
-  Scenario: localStorage is unavailable, so the OS preference is used instead
-    Given localStorage is unavailable in the visitor's browser
-    And the operating system reports a light-mode preference
-    When the application loads
-    Then the light theme is applied
+  Scenario: A request finishing exactly at the timeout is not treated as a failure
+    Given Sam sends a request to the backend
+    When the request completes at exactly the configured timeout value
+    Then the backend does not respond with a timeout error
 ```
 
 ## Traceability

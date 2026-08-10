@@ -1,27 +1,27 @@
 ## Feature
 
-UI icons rendered as vector graphics
+Database unavailability is logged server-side
 
 ## Narrative
 
-As a visitor
-I want icon-bearing controls to show clear, legible icons
-So that I can recognize what each control does at a glance
+As the person operating Budget Checker
+I want database-unavailability failures recorded in the server logs
+So that I can diagnose an outage without relying on the caller to report it
 
 ## Scenarios
 
 ```gherkin
-Feature: UI icons rendered as vector graphics
+Feature: Database unavailability is logged server-side
 
-  Scenario: The theme toggle renders a legible vector icon
-    Given the header renders
-    When the theme toggle control displays
-    Then it shows a vector icon rather than plain text or a placeholder
+  Scenario: A database-unavailable failure is recorded server-side
+    Given the database is unavailable
+    When Sam sends an API request that requires the database
+    Then the backend records the failure in its server-side logs
 
-  Scenario: Different icons are visually distinguishable from each other
-    Given two different icon-bearing controls render
-    When both are visible
-    Then each icon's graphic is visually distinct from the other
+  Scenario: Multiple failures from the same outage are each logged individually
+    Given the database is unavailable
+    When two separate requests fail because of it
+    Then the backend records two separate failures in its server-side logs
 ```
 
 ## Traceability

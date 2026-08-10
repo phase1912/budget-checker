@@ -1,29 +1,29 @@
 ## Requirement
 
-If neither a stored theme preference nor an operating system color-scheme preference is available, then the application shall apply the light theme.
+If the backend receives invalid input on an API request, then the backend service shall record the failure in its server-side logs.
 
 ## Rationale
 
-Completes the founder's fallback chain from the failure-behaviour answer: localStorage, then OS preference, then light as the final default — the application must always resolve to a defined theme rather than an undefined or broken state.
+Traces to the requirements-stage `failure-behaviour` answer. Split from the user-facing error response (see [[prob-1/concept-1/req-5]]) so each half is independently verifiable.
 
 ## Verification
 
-Test: with localStorage cleared/unavailable and no OS color-scheme preference exposed, load the application and assert the light theme is applied.
+test
 
 ## Traces to
 
-- [[prob-1/concept-1]] — "Chosen approach", dark mode paragraph
+- [[prob-1/concept-1]]
 
 ## Metadata
 
 ```json
 {
-  "id": "DS-8",
-  "title": "Default to light theme",
+  "id": "ERR-4",
+  "title": "Invalid input is logged server-side",
   "pattern": "unwanted-behaviour",
-  "statement": "If neither a stored theme preference nor an operating system color-scheme preference is available, then the application shall apply the light theme.",
-  "rationale": "Founder: graceful fallback to light theme as the final default in the absence of any other signal.",
-  "priority": "must",
+  "statement": "If the backend receives invalid input on an API request, then the backend service shall record the failure in its server-side logs.",
+  "rationale": "failure-behaviour answer: errors must be logged server-side.",
+  "priority": "should",
   "verification": "test",
   "traces_to": ["prob-1/concept-1"]
 }

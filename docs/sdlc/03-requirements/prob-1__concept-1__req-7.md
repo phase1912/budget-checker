@@ -1,29 +1,29 @@
 ## Requirement
 
-If localStorage is unavailable or contains no stored theme preference, then the application shall apply the operating system's prefers-color-scheme setting.
+If a request to the backend exceeds the configured timeout, then the backend service shall respond with a generic error message.
 
 ## Rationale
 
-Founder's answer to the failure-behaviour question: a graceful fallback is required so the application never breaks or looks wrong when there is no stored choice (e.g. first visit, or private browsing where localStorage may be restricted).
+Traces to the requirements-stage `failure-behaviour` answer, applied to the timeout failure mode. Split from logging (see [[prob-1/concept-1/req-10]]) so each half is independently verifiable.
 
 ## Verification
 
-Test: with localStorage cleared/unavailable and the OS/browser set to a specific color-scheme preference, load the application and assert the applied theme matches that OS preference.
+test
 
 ## Traces to
 
-- [[prob-1/concept-1]] — "Chosen approach", dark mode paragraph
+- [[prob-1/concept-1]]
 
 ## Metadata
 
 ```json
 {
-  "id": "DS-7",
-  "title": "Fallback to OS theme preference",
+  "id": "ERR-3",
+  "title": "Timeout produces a generic error response",
   "pattern": "unwanted-behaviour",
-  "statement": "If localStorage is unavailable or contains no stored theme preference, then the application shall apply the operating system's prefers-color-scheme setting.",
-  "rationale": "Founder: graceful fallback to light theme required when localStorage/stored preference is unavailable, first checking the OS-level preference.",
-  "priority": "must",
+  "statement": "If a request to the backend exceeds the configured timeout, then the backend service shall respond with a generic error message.",
+  "rationale": "failure-behaviour answer named a timeout as a case to handle at basic level.",
+  "priority": "should",
   "verification": "test",
   "traces_to": ["prob-1/concept-1"]
 }

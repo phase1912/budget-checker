@@ -1,23 +1,32 @@
 ## Feature
 
-Landing page redesign
+Timeout is logged server-side
 
 ## Narrative
 
-As a visitor to the landing page
-I want to see a designed, styled page
-So that the product looks trustworthy and finished rather than unstyled markup
+As the person operating Budget Checker
+I want every backend timeout recorded in the server logs
+So that I can diagnose failures without asking the user what happened
 
 ## Scenarios
 
 ```gherkin
-Feature: Landing page redesign
+Feature: Timeout is logged server-side
 
-  Scenario: The landing page shows styled content
-    Given a visitor opens the landing page
-    When the page renders
-    Then the heading, body text, and status line are styled with the theme's typography, color, and spacing
-    And no element renders with unstyled default browser presentation
+  Scenario: A timed-out request is logged
+    Given a request to the backend is in progress
+    When the request exceeds the configured timeout
+    Then the backend records the timeout as a failure in its server-side logs
+
+  Scenario: A request finishing exactly at the timeout is not logged as a failure
+    Given a request to the backend is in progress
+    When the request completes at exactly the configured timeout value
+    Then the backend does not record a timeout failure for that request
+
+  Scenario: Multiple timeouts are each logged individually
+    Given two separate requests to the backend are in progress
+    When both requests exceed the configured timeout
+    Then the backend records two separate timeout failures in its server-side logs
 ```
 
 ## Traceability

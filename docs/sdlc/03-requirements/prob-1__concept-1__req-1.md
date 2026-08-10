@@ -1,30 +1,30 @@
 ## Requirement
 
-The frontend shall define every color value used in the UI within a single, centrally maintained theme configuration.
+When an anonymous visitor requests the landing page, the frontend application shall display the product description without requiring authentication.
 
 ## Rationale
 
-Directly serves the founder's success metric in [[prob-1]]: "all colors live in one place" — no component may define its own hex/rgb value. This requirement states the outcome the founder needs; [[prob-1/concept-1]]'s "Chosen approach" records that the mechanism is a Tailwind v4 `@theme` configuration, which is a design/technology decision rather than something the requirement itself should hard-code.
+Traces to the concept's chosen approach (a React+MobX SPA that includes the landing page) and to the confirmed `actors` answer: the landing page is public and requires no registration, unlike the rest of the application. Named must-have in the `must-have` answer.
 
 ## Verification
 
-Inspection: grep the frontend source for raw hex/rgb color literals outside the theme configuration file; the search must return no matches.
+demonstration
 
 ## Traces to
 
-- [[prob-1/concept-1]] — "Chosen approach", tokens paragraph
+- [[prob-1/concept-1]] — Chosen approach (landing page is part of the frontend SPA)
 
 ## Metadata
 
 ```json
 {
-  "id": "DS-1",
-  "title": "Single source of truth for color tokens",
-  "pattern": "ubiquitous",
-  "statement": "The frontend shall define every color value used in the UI within a single, centrally maintained theme configuration.",
-  "rationale": "Founder's success metric in the problem brief: all colors live in one place, referenced everywhere, none scattered across components.",
+  "id": "LAND-1",
+  "title": "Public landing page access",
+  "pattern": "event-driven",
+  "statement": "When an anonymous visitor requests the landing page, the frontend application shall display the product description without requiring authentication.",
+  "rationale": "Confirmed in the requirements-stage actors answer: the landing page is public, no registration required. Named must-have.",
   "priority": "must",
-  "verification": "inspection",
+  "verification": "demonstration",
   "traces_to": ["prob-1/concept-1"]
 }
 ```

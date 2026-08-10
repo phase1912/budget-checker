@@ -1,27 +1,29 @@
 ## Feature
 
-Theme toggle switches active theme
+Invalid input produces a generic error response
 
 ## Narrative
 
-As a visitor
-I want the toggle to switch between light and dark
-So that I can view the site in whichever theme I prefer right now
+As a caller of the Budget Checker API
+I want a clear, generic error when my request is invalid
+So that I know something was wrong without seeing internal implementation details
 
 ## Scenarios
 
 ```gherkin
-Feature: Theme toggle switches active theme
+Feature: Invalid input produces a generic error response
 
-  Scenario Outline: Activating the toggle switches from one theme to the other
-    Given the application is showing the <current> theme
-    When the visitor activates the theme toggle
-    Then the application shows the <next> theme
+  Scenario Outline: Invalid input is rejected with a generic error
+    Given Sam sends an API request with <problem>
+    When the backend processes the request
+    Then the backend responds with a generic error message
+    And the response does not expose internal implementation details
 
     Examples:
-      | current | next  |
-      | light   | dark  |
-      | dark    | light |
+      | problem                       |
+      | a missing required field      |
+      | a field of the wrong type     |
+      | a malformed request body      |
 ```
 
 ## Traceability

@@ -1,29 +1,22 @@
 ## Feature
 
-Shared header and footer across routes
+Backend reachable from frontend
 
 ## Narrative
 
-As a visitor navigating the application
-I want the header and footer to stay the same everywhere
-So that the app feels like one coherent product, not disconnected pages
+As the person building Budget Checker
+I want the frontend to be able to confirm the backend is up
+So that I know the skeleton architecture actually connects before building real features on top of it
 
 ## Scenarios
 
 ```gherkin
-Feature: Shared header and footer across routes
+Feature: Backend reachable from frontend
 
-  Scenario: The current route renders inside the shared Layout
-    Given a visitor loads the root route
-    When the page renders
-    Then the shared header is visible
-    And the shared footer is visible
-    And the route's own content renders between them
-
-  Scenario: Every route is nested under the Layout
-    Given the router configuration
-    When it is inspected
-    Then every route is registered as a child of the Layout root route
+  Scenario: The frontend confirms the backend is available
+    Given the backend service is running and reachable
+    When the frontend requests the backend's health-check endpoint
+    Then the backend responds indicating it is available
 ```
 
 ## Traceability

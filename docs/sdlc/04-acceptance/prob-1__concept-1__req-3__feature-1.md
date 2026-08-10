@@ -1,26 +1,31 @@
 ## Feature
 
-Router mounts Landing at root path
+Draft DB schema defines core entities
 
 ## Narrative
 
-As a visitor
-I want the landing page to load when I visit the site's root URL
-So that I land on the intended page
+As the person building Budget Checker
+I want the draft schema to define users, receipts, and budgets as distinct entities
+So that later features have a data model to build on instead of starting from nothing
 
 ## Scenarios
 
 ```gherkin
-Feature: Router mounts Landing at root path
+Feature: Draft DB schema defines core entities
 
-  Scenario: The root path renders the Landing page
-    Given a visitor requests the root path "/"
-    When the router resolves the request
-    Then the Landing page's content renders inside the shared Layout
+  Scenario: The schema defines all three required entities
+    Given the database schema definition
+    When it is inspected
+    Then it defines an entity for users
+    And it defines an entity for receipts
+    And it defines an entity for budgets
+
+  Scenario: A schema missing one of the required entities fails inspection
+    Given a database schema definition that is missing the receipts entity
+    When it is inspected against this requirement
+    Then the inspection fails
 ```
 
 ## Traceability
 
 Verifies [[prob-1/concept-1/req-3]].
-
-Note: behaviour for unmatched paths is out of scope for this requirement and is covered by the separate not-found requirement (DS-13, pending formal registration as a fast-follow — see the `unknown-route-behaviour` decision recorded on this branch).

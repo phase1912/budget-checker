@@ -1,23 +1,27 @@
 ## Feature
 
-Default to light theme
+Invalid input is logged server-side
 
 ## Narrative
 
-As a first-time visitor whose system has no color-scheme preference set
-I want the site to still load in a sensible, defined theme
-So that nothing looks broken or undefined
+As the person operating Budget Checker
+I want invalid-input failures recorded in the server logs
+So that I can see what went wrong without relying on the caller to report it
 
 ## Scenarios
 
 ```gherkin
-Feature: Default to light theme
+Feature: Invalid input is logged server-side
 
-  Scenario: No stored preference and no OS preference, so light is applied
-    Given no theme preference is stored
-    And the operating system reports no color-scheme preference
-    When the application loads
-    Then the light theme is applied
+  Scenario: Invalid input is recorded server-side
+    Given Sam sends an API request with a missing required field
+    When the backend processes the request
+    Then the backend records the failure in its server-side logs
+
+  Scenario: Multiple invalid requests are each logged individually
+    Given Sam sends two separate API requests, each with invalid input
+    When the backend processes both requests
+    Then the backend records two separate failures in its server-side logs
 ```
 
 ## Traceability

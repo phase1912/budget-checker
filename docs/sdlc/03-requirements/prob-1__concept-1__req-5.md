@@ -1,29 +1,29 @@
 ## Requirement
 
-When the user activates the theme toggle, the application shall switch the active theme between light and dark.
+If the backend receives invalid input on an API request, then the backend service shall respond with a generic error message.
 
 ## Rationale
 
-Directly implements the header control required by DS-4, giving it an observable effect. Serves the founder's success metric of a working theme toggle in [[prob-1]].
+Traces to the requirements-stage `failure-behaviour` answer: on invalid input, the founder wants an understandable error shown to the caller, with no internal implementation details leaked. Split from logging (see [[prob-1/concept-1/req-8]]) so each half is independently verifiable.
 
 ## Verification
 
-Test: activate the toggle and assert the rendered theme changes from its current value to the other value.
+test
 
 ## Traces to
 
-- [[prob-1/concept-1]] — "Chosen approach", dark mode paragraph
+- [[prob-1/concept-1]]
 
 ## Metadata
 
 ```json
 {
-  "id": "DS-5",
-  "title": "Theme toggle switches the active theme",
-  "pattern": "event-driven",
-  "statement": "When the user activates the theme toggle, the application shall switch the active theme between light and dark.",
-  "rationale": "Founder's success metric: a working light/dark theme toggle in the header.",
-  "priority": "must",
+  "id": "ERR-1",
+  "title": "Invalid input produces a generic error response",
+  "pattern": "unwanted-behaviour",
+  "statement": "If the backend receives invalid input on an API request, then the backend service shall respond with a generic error message.",
+  "rationale": "failure-behaviour answer: understandable error to the caller, no internal details leaked.",
+  "priority": "should",
   "verification": "test",
   "traces_to": ["prob-1/concept-1"]
 }

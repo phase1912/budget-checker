@@ -1,33 +1,28 @@
 ## Feature
 
-Centralized color tokens
+Public landing page access
 
 ## Narrative
 
-As the person maintaining this frontend
-I want every color to come from one theme configuration
-So that changing a color is a single edit and no component invents its own value
+As an anonymous visitor
+I want to see the product description without signing up
+So that I can decide whether Budget Checker is worth trying before committing to an account
 
 ## Scenarios
 
 ```gherkin
-Feature: Centralized color tokens
+Feature: Public landing page access
 
-  Scenario: A component uses a color from the theme configuration
-    Given the theme configuration defines a color token
-    When a component needs that color
-    Then the component references the token
-    And the rendered UI shows the token's color
+  Scenario: An anonymous visitor sees the landing page
+    Given Alex has no account and no active session
+    When Alex opens the landing page
+    Then Alex sees the product description
 
-  Scenario: A reused color stays consistent across components
-    Given two different components both use the same color token
-    When both components render
-    Then both display the exact same color value
-
-  Scenario: No component defines its own raw color value
-    Given the full frontend source
-    When it is searched for hex or rgb color literals outside the theme configuration
-    Then no such literal is found
+  Scenario: The landing page is never gated behind a login
+    Given Alex has no account and no active session
+    When Alex opens the landing page
+    Then Alex is not redirected to a sign-in screen
+    And Alex is not asked for credentials
 ```
 
 ## Traceability

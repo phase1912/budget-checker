@@ -1,30 +1,30 @@
 ## Requirement
 
-The router shall mount the Landing page as the content of the Layout at the root path.
+The database schema shall define entities for users, receipts, and budgets.
 
 ## Rationale
 
-Realizes the "router-ready foundation" chosen in [[prob-1/concept-1]]: a router exists now, with Layout as the root layout route, even though there is only one page today — so future pages are added as new routes without restructuring.
+Traces to the concept's chosen approach and to the problem brief's confirmed scope, which named a draft DB schema covering users, receipts, and budgets as part of the "foundation" feature. Named must-have.
 
 ## Verification
 
-Test: an automated navigation test requests the root path and asserts the Landing page content renders inside the Layout.
+inspection
 
 ## Traces to
 
-- [[prob-1/concept-1]] — "Chosen approach", Layout paragraph
+- [[prob-1/concept-1]] — Chosen approach (draft DB schema)
 
 ## Metadata
 
 ```json
 {
-  "id": "DS-3",
-  "title": "Router mounts Landing at root path",
+  "id": "DATA-1",
+  "title": "Draft DB schema defines core entities",
   "pattern": "ubiquitous",
-  "statement": "The router shall mount the Landing page as the content of the Layout at the root path.",
-  "rationale": "Router-ready foundation chosen in the concept: Layout is the root route, Landing is today's only child route.",
+  "statement": "The database schema shall define entities for users, receipts, and budgets.",
+  "rationale": "Problem brief and concept both scope the foundation's draft DB schema to users, receipts, and budgets. Named must-have.",
   "priority": "must",
-  "verification": "test",
+  "verification": "inspection",
   "traces_to": ["prob-1/concept-1"]
 }
 ```

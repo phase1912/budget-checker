@@ -1,27 +1,28 @@
 ## Feature
 
-Header exposes theme toggle
+DB schema supports deleting a user's data
 
 ## Narrative
 
-As a visitor
-I want to see a way to switch themes in the header
-So that I know the option exists and can find it easily
+As the person operating Budget Checker
+I want deleting a user to leave no orphaned records behind
+So that the schema does not structurally block honoring a data-deletion request
 
 ## Scenarios
 
 ```gherkin
-Feature: Header exposes theme toggle
+Feature: DB schema supports deleting a user's data
 
-  Scenario: The toggle is visible in the header
-    Given a visitor loads any route
-    When the header renders
-    Then a theme toggle control is visible in the header
+  Scenario: Deleting a user with receipts and budgets leaves no orphaned records
+    Given a user has receipts and budgets recorded against their account
+    When the user is deleted
+    Then no receipts row referencing that user remains
+    And no budgets row referencing that user remains
 
-  Scenario: The toggle remains present regardless of active theme
-    Given the application is showing the dark theme
-    When the header renders
-    Then the theme toggle control is still visible in the header
+  Scenario: Deleting a user with no dependent records succeeds cleanly
+    Given a user has no receipts and no budgets recorded
+    When the user is deleted
+    Then the deletion succeeds without error
 ```
 
 ## Traceability
