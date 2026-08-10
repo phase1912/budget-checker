@@ -13,7 +13,7 @@ backend/.venv/
 # frontend
 frontend/node_modules/
 frontend/dist/
-
+node_modules/
 # editor / local
 .idea/
 .claude/settings.local.json

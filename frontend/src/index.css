@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+/*
+ * Single source of truth for color (DS-1): every color used anywhere in the UI
+ * is defined once, here, as a semantic token — components reference tokens
+ * (e.g. bg-primary, text-foreground), never raw hex/rgb values.
+ *
+ * Each token has a distinct light and dark value (DS-12): :root holds the
+ * light-theme values, .dark overrides them for the dark theme.
+ */
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --surface: #f8fafc;
+  --border: #e2e8f0;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+
+  --primary: #15803d;
+  --primary-hover: #166534;
+  --primary-foreground: #ffffff;
+
+  --accent: #4f46e5;
+  --accent-foreground: #ffffff;
+
+  --success: #15803d;
+  --success-foreground: #ffffff;
+
+  --error: #b91c1c;
+  --error-foreground: #ffffff;
+
+  --warning: #d97706;
+  --warning-foreground: #451a03;
+
+  --info: #1d4ed8;
+  --info-foreground: #ffffff;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --surface: #1e293b;
+  --border: #334155;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+
+  --primary: #4ade80;
+  --primary-hover: #86efac;
+  --primary-foreground: #052e14;
+
+  --accent: #a5b4fc;
+  --accent-foreground: #1e1b4b;
+
+  --success: #4ade80;
+  --success-foreground: #052e14;
+
+  --error: #fca5a5;
+  --error-foreground: #450a0a;
+
+  --warning: #fbbf24;
+  --warning-foreground: #451a03;
+
+  --info: #93c5fd;
+  --info-foreground: #172554;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
