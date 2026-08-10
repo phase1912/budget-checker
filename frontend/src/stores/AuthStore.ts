@@ -22,6 +22,8 @@ export interface LoginPayload {
   password: string
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
+
 class AuthStore {
   user: User | null = null
   accessToken: string | null = null
@@ -103,7 +105,7 @@ class AuthStore {
     this.isLoading = true
     this.error = null
     try {
-      const response = await fetch('/api/v1/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -135,7 +137,7 @@ class AuthStore {
     this.isLoading = true
     this.error = null
     try {
-      const response = await fetch('/api/v1/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -166,7 +168,7 @@ class AuthStore {
   async logout() {
     if (this.refreshToken) {
       try {
-        await fetch('/api/v1/auth/logout', {
+        await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refresh_token: this.refreshToken }),
