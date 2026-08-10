@@ -73,9 +73,12 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(TimeoutMiddleware, timeout_seconds=REQUEST_TIMEOUT_SECONDS)
 
+    from .routers import auth, health
+
     register_error_handling(app)
 
     app.include_router(health.router)
+    app.include_router(auth.router)
 
     Base.metadata.create_all(bind=engine)
 
