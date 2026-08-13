@@ -20,7 +20,7 @@ node .meridian/run.cjs analyze
 Run from the project root. This parses all source files, builds the knowledge graph, writes it to `.meridian/`, and generates CLAUDE.md / AGENTS.md context files.
 
 | Flag           | Effect                                                           |
-| -------------- | ------------------------------------------------------------------ |
+| -------------- | ---------------------------------------------------------------- |
 | `--force`      | Force full re-index even if up to date                           |
 | `--embeddings` | Enable embedding generation for semantic search (off by default) |
 | `--drop-embeddings` | Drop existing embeddings on rebuild. By default, an `analyze` without `--embeddings` preserves them. |
@@ -45,7 +45,7 @@ node .meridian/run.cjs clean
 Deletes the `.meridian/` directory and unregisters the repo from the global registry. Use before re-indexing if the index is corrupt or after removing Meridian from a project.
 
 | Flag      | Effect                                            |
-| --------- | -------------------------------------------------- |
+| --------- | ------------------------------------------------- |
 | `--force` | Skip confirmation prompt                          |
 | `--all`   | Clean all indexed repos, not just the current one |
 
@@ -58,7 +58,7 @@ node .meridian/run.cjs wiki
 Generates repository documentation from the knowledge graph using an LLM. Requires an API key (saved to `~/.meridian/config.json` on first use).
 
 | Flag                | Effect                                    |
-| ------------------- | ------------------------------------------ |
+| ------------------- | ----------------------------------------- |
 | `--force`           | Force full regeneration                   |
 | `--model <model>`   | LLM model (default: minimax/minimax-m2.5) |
 | `--base-url <url>`  | LLM API base URL                          |
