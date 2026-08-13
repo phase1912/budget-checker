@@ -20,7 +20,7 @@ For any task involving code understanding, debugging, impact analysis, or refact
 ## Skills
 
 | Task                                         | Skill to read       |
-| ---------------------------------------------- | ---------------------- |
+| -------------------------------------------- | ------------------- |
 | Understand architecture / "How does X work?" | `meridian-exploring`         |
 | Blast radius / "What breaks if I change X?"  | `meridian-impact-analysis`   |
 | Trace bugs / "Why is X failing?"             | `meridian-debugging`         |
@@ -31,7 +31,7 @@ For any task involving code understanding, debugging, impact analysis, or refact
 ## Tools Reference
 
 | Tool             | What it gives you                                                        |
-| ------------------ | ---------------------------------------------------------------------------- |
+| ---------------- | ------------------------------------------------------------------------ |
 | `query`          | Process-grouped code intelligence — execution flows related to a concept |
 | `context`        | 360-degree symbol view — categorized refs, processes it participates in  |
 | `impact`         | Symbol blast radius — what breaks at depth 1/2/3 with confidence         |
@@ -117,7 +117,7 @@ Cross-repo (experimental): pass `repo: "@groupName"` to trace across a group's m
 Lightweight reads (~100-500 tokens) for navigation:
 
 | Resource                                       | Content                                   |
-| ------------------------------------------------- | -------------------------------------------- |
+| ---------------------------------------------- | ----------------------------------------- |
 | `meridian://repo/{name}/context`               | Stats, staleness check                    |
 | `meridian://repo/{name}/clusters`              | All functional areas with cohesion scores |
 | `meridian://repo/{name}/cluster/{clusterName}` | Area members                              |

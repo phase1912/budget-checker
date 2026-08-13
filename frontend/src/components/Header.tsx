@@ -10,7 +10,7 @@ export const Header: React.FC = observer(() => {
   return (
     <>
       <header className="border-b border-border bg-surface sticky top-0 z-40 backdrop-blur-md bg-surface/90">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center space-x-3">
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               Budget Checker
