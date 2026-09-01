@@ -16,7 +16,8 @@ describe('Layout', () => {
     )
 
     expect(screen.getByRole('banner')).toBeInTheDocument()
-    expect(screen.getByRole('banner').querySelector('.max-w-6xl')).toBeInTheDocument()
+    const headerContainer = screen.getByRole('banner').querySelector('div')
+    expect(headerContainer).toHaveClass('sm:max-w-2xl', 'md:max-w-4xl', 'lg:max-w-6xl', 'xl:max-w-7xl')
     expect(screen.getByRole('contentinfo')).toBeInTheDocument()
     expect(screen.getByText('Route content')).toBeInTheDocument()
   })

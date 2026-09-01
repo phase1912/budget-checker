@@ -1,7 +1,7 @@
 <!-- meridian:start -->
 # Meridian — Code Intelligence
 
-This project is indexed by Meridian as **budget-checker** (866 symbols, 1173 relationships, 16 execution flows). Use the Meridian MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by Meridian as **budget-checker** (1082 symbols, 1389 relationships, 16 execution flows). Use the Meridian MCP tools to understand code, assess impact, and navigate safely.
 
 > Index stale? Run `node .meridian/run.cjs analyze` from the project root — it auto-selects an available runner. No `.meridian/run.cjs` yet? `npx meridian analyze` (npm 11 crash → `npm i -g meridian`; #1939).
 
