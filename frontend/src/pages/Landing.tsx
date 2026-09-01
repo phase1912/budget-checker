@@ -6,7 +6,7 @@ type LandingProps = {
 
 export function Landing({ backendStatus }: LandingProps) {
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-16">
+    <div className="mx-auto w-full px-4 sm:px-6 sm:max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl py-16">
       <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         Budget Checker
       </h1>
