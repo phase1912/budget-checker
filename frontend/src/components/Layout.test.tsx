@@ -16,7 +16,7 @@ describe('Layout', () => {
     )
 
     expect(screen.getByRole('banner')).toBeInTheDocument()
-    expect(screen.getByRole('banner').querySelector('.max-w-6xl')).toBeInTheDocument()
+    expect(screen.getByRole('banner').querySelector('.max-w-7xl')).toBeInTheDocument()
     expect(screen.getByRole('contentinfo')).toBeInTheDocument()
     expect(screen.getByText('Route content')).toBeInTheDocument()
   })
