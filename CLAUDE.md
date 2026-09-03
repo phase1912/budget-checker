@@ -21,17 +21,6 @@ This project is indexed by Meridian as **budget-checker** (1082 symbols, 1389 re
 - NEVER rename symbols with find-and-replace — use `rename` which understands the call graph.
 - NEVER commit changes without running `detect_changes()` to check affected scope.
 
-## SDLC Process Rules
-
-- **Meridian SDLC overrides built-in planning:** When using Meridian SDLC, it is the MANDATORY single source of truth. DO NOT use your built-in planning mode or create `implementation_plan.md` artifacts.
-- **No premature coding:** Do NOT edit any source code files until the Meridian SDLC engine explicitly advances to the `implementation` stage. Your first tool call should be to start the process.
-- **MUST NOT automatically answer inquiries:** When executing the SDLC process, DO NOT automatically call `sdlc_answer` using assumptions from the initial prompt. You must show the user exactly what is being asked.
-- **MUST pause and confirm:** NEVER batch multiple `sdlc_submit` calls in a single turn. After a stage is closed by the engine, you MUST stop execution, present the generated artifact link to the user, and wait for explicit confirmation ("Proceed to next stage?") before continuing. Do not silently power through stages.
-- **For Antigravity:** You MUST use your native `ask_question` tool to present the SDLC questions as an interactive form. You may recommend an answer by prefixing the option with "(Recommended)", but the user must submit the form.
-- **Create Artifacts Per Stage:** You MUST write the physical Markdown artifact files to disk (e.g., in `docs/sdlc/{slug}/`) at each corresponding stage and register them via `sdlc_add_artifact` BEFORE calling `sdlc_submit`. Do NOT skip creating documents or attach unrelated files just to bypass the gate.
-- **No String-Only Bypasses:** Answers to SDLC questions must reference the physical files you created in `docs/sdlc/`.
-- **Strict Git Hygiene:** When committing or pushing, you MUST only stage the exact files you created or modified for the current step (e.g., `git add path/to/specific_file`). NEVER use `git commit -a`, `git add .`, or push files that you did not change.
-
 ## Resources
 
 | Resource | Use for |
@@ -54,10 +43,38 @@ This project is indexed by Meridian as **budget-checker** (1082 symbols, 1389 re
 
 <!-- meridian:end -->
 
-## SDLC human decisions — no terminal commands
+## Which engine runs the work — read this before starting anything
 
-`sdlc_decide` resolves an SDLC escalation and is human-facing: the agent must not decide it unilaterally. That does **not** mean handing the user a CLI command to run themselves.
+Two different products are connected here and both are called Meridian. They are
+not alternatives; only one of them runs work.
 
-- Ask the person directly in the conversation — plain text or a short yes/no — and wait for a genuine answer.
-- Once they've answered, call `sdlc_decide` yourself, with their answer as `rationale`.
-- Never tell the user to open a terminal or run `meridian sdlc decide ...` (or `node .meridian/run.cjs sdlc decide ...`) themselves. The audit trail is the `rationale` you pass, not who typed the call.
+**`meridian-engine` is the engine. Use it.** Its tools are `list_repositories`,
+`start_process`, `advance_process`, `process_status`, `list_questions`,
+`relay_answer`, `list_artifacts`, `read_artifact`.
+
+**Never use the `sdlc_*` tools** — `sdlc_start`, `sdlc_submit`, `sdlc_answer`,
+`sdlc_check`, `sdlc_status`, `sdlc_decide`, `sdlc_add_artifact` and the rest.
+They belong to the previous system, they write into `docs/sdlc/proc-N-…/`, and a
+process started through them is invisible to the engine. If you find yourself
+about to call one, stop and use `meridian-engine` instead.
+
+The `meridian` tools that are **not** `sdlc_*` — `impact`, `query`, `context`,
+`detect_changes`, `rename`, `explain` — are code intelligence, not a process
+engine. They stay useful and the rules above the marker still apply to them.
+
+### What your role is, and it is different from before
+
+The previous system made *you* the maker: it tracked a process while you wrote
+the code. The engine does not work that way. The work happens **inside** it — its
+own maker writes the artifacts and edits the tree — and you are an operator:
+
+- start a process, grant it bounded execution, poll where it got to, read what
+  it produced;
+- **do not write source files yourself** while a process is running. If you are
+  creating files, something has gone wrong: check which tools you are calling.
+- questions for a person arrive through the client as a form, or wait at the
+  engine's desk. Answer them there; do not answer them on somebody's behalf.
+
+If the engine cannot be reached, say so and stop. Falling back to `sdlc_*`, or to
+doing the work by hand, is not a fallback — it is a different process with a
+different audit trail, and it leaves the engine holding nothing.
