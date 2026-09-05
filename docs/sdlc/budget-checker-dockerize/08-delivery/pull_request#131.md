@@ -1,26 +1,22 @@
-pull_request — NOT CREATED: forge unidentified, no URL to report
+pull_request — NOT CREATED (attempt 2): forge still unidentified; no URL to report
 
-## What blocked this stage
+## What blocked this stage (again)
 
-The pull request could not be opened, so there is no pull_request artifact with a URL to register. The reason is stated plainly rather than papered over:
+- This frame has repository read/write tools only — no shell, no git state, no forge CLI (`gh`/`glab`/`tea`). Opening the pull request through a forge API or MCP server is disallowed, and a pull request opened any other way cannot be confirmed by `pr-verify-command`; an unconfirmed claim fails the gate as surely as a missing pull request.
+- The prior stage's `pr-create-command` answer (settled_question#123) declined to name a forge because no remote is visible; this frame confirms that with its own searches — `search_text` across the tree finds no remote URL, no forge config, and no `pr-base`/default-branch answer exists anywhere in the chain. There is no command I can honestly run.
 
-- The previous stage's answer to `pr-create-command` (settled_question#123) was that the forge cannot be identified — `git remote -v` is not available in this process's frames, and no remote URL appears in any object in the chain.
-- This frame (assemble-pr-v1) has repository read/write tools only. No shell, no forge CLI (`gh`, `glab`, `tea`), no git state. Opening the pull request through a forge API or MCP server is explicitly disallowed, and a pull request opened any other way cannot be confirmed by the `pr-verify-command` gate — so an unconfirmed claim would fail the gate as surely as a missing pull request does.
-- No URL means no valid artifact: the engine confirms a pull request by reading the URL out of the artifact's content and running it through `pr-verify-command`. An artifact that describes a pull request without naming it cannot be confirmed.
+## New finding this frame
 
-## What IS done and ready
+The six files `code_change#52` claims as the diff (`docker-compose.yml`, `backend/Dockerfile`, `backend/.dockerignore`, `frontend/Dockerfile`, `frontend/nginx.conf`, `frontend/.dockerignore`) are **not visible in this frame's tree** — every search hit for them is inside `docs/sdlc/budget-checker-dockerize/`. They may exist on a branch not checked out here, but a person must confirm the branch carrying the diff exists before creating the PR.
 
-- **The PR body is written** to `docs/sdlc/budget-checker-dockerize/pr-body.md` (3,110 bytes), with all four required sections: Summary (dockerize the FastAPI backend and React/Vite frontend behind `docker compose up` — six new packaging files, zero application source changes), Requirements covered (the change brief's three acceptance criteria, criterion IDs inline), Testing (verification_report#76's inspection record: all env-var touchpoints cross-checked; existing pytest and vitest suites discovered but unrun; Docker acceptance criteria unexecuted), and Risk and blast radius (review_report#106's two low-severity findings and the dominant residual risk — no acceptance criterion has ever been executed against a real Docker daemon).
-- **The diff is verified in the tree**: `docker-compose.yml`, `backend/Dockerfile`, `backend/.dockerignore`, `frontend/Dockerfile`, `frontend/nginx.conf`, `frontend/.dockerignore` all exist; `search_text` confirms `docker-compose.yml` is present at the root and no other Docker-related files exist outside `docs/sdlc/`.
-- **The review gate passed** (settled_question#108, Bohdan: yes) on review_report#106, verdict READY.
+## What is ready
 
-## What a person must do to finish
+- **PR body written** to `docs/sdlc/budget-checker-dockerize/pr-body.md` (29 lines) with all four required sections: Summary (six-file additive Docker packaging, zero application-source changes), Requirements covered (change_brief#34's three acceptance criteria), Testing (verification_report#76's inspection record; all Docker acceptance criteria unexecuted — no daemon was ever available), and Risk and blast radius (review_report#106's two low findings; dominant residual risk that the capability has never been executed).
+- Review gate passed (settled_question#108, Bohdan: yes) on review_report#106, verdict READY.
 
-1. Run `git remote -v` to identify the forge and confirm the branch that carries the six files.
-2. Confirm the forge CLI is installed and authenticated, and verify its flags against `--help` (the prior stage declined to invent them — the same discipline this stage applies).
-3. Run the create command with `--body-file docs/sdlc/budget-checker-dockerize/pr-body.md` and the base branch resolved to the repository default.
-4. Re-run this stage so the pull_request artifact can be registered with the real URL on its first line, parented to review_report#106.
+## Person-steps to finish
 
-## Base branch
-
-Unknown. No default branch is determinable from this frame; the branch strategy answer was "stay" (settled_question#128), so the PR should target whatever the repository's default is, resolved at create time.
+1. `git remote -v` to identify the forge; verify the branch carrying the six packaging files actually exists.
+2. Confirm the forge CLI is installed/authenticated and its flags against `--help`.
+3. Create the PR with `--body-file docs/sdlc/budget-checker-dockerize/pr-body.md`, base resolved to the repository default (branch strategy was "stay", settled_question#128).
+4. Re-run this stage to register the pull_request artifact with the URL on its first line, parented to review_report#106.
