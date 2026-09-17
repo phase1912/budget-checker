@@ -26,7 +26,7 @@ def test_schema_defines_core_entities():
 
 def test_deleting_user_with_dependents_leaves_no_orphaned_records():
     session = _make_session()
-    user = User(email="alex@example.com")
+    user = User(email="alex@example.com", hashed_password="x")
     session.add(user)
     session.flush()
 
@@ -44,7 +44,7 @@ def test_deleting_user_with_dependents_leaves_no_orphaned_records():
 
 def test_deleting_user_with_no_dependents_succeeds_cleanly():
     session = _make_session()
-    user = User(email="jamie@example.com")
+    user = User(email="jamie@example.com", hashed_password="x")
     session.add(user)
     session.commit()
 
