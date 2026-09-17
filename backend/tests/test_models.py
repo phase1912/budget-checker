@@ -19,6 +19,11 @@ def _make_session():
     return session_factory()
 
 
+def _make_user(email):
+    """A user row that satisfies the model: hashed_password is non-nullable."""
+    return User(email=email, hashed_password="test-hash")
+
+
 def test_schema_defines_core_entities():
     tables = set(Base.metadata.tables.keys())
     assert {"users", "receipts", "budgets"}.issubset(tables)
@@ -26,7 +31,7 @@ def test_schema_defines_core_entities():
 
 def test_deleting_user_with_dependents_leaves_no_orphaned_records():
     session = _make_session()
-    user = User(email="alex@example.com")
+    user = _make_user("alex@example.com")
     session.add(user)
     session.flush()
 
@@ -44,7 +49,7 @@ def test_deleting_user_with_dependents_leaves_no_orphaned_records():
 
 def test_deleting_user_with_no_dependents_succeeds_cleanly():
     session = _make_session()
-    user = User(email="jamie@example.com")
+    user = _make_user("jamie@example.com")
     session.add(user)
     session.commit()
 
