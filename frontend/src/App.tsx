@@ -4,6 +4,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { Landing } from './pages/Landing'
 import { NotFound } from './pages/NotFound'
+import { ReceiptsPage } from './pages/ReceiptsPage'
 import { healthStore } from './stores/HealthStore'
 
 const App = observer(function App() {
@@ -15,6 +16,7 @@ const App = observer(function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Landing backendStatus={healthStore.status} />} />
+        <Route path="receipts" element={<ReceiptsPage />} />
         <Route path="not-found" element={<NotFound />} />
         <Route path="*" element={<Navigate to="/not-found" replace />} />
       </Route>

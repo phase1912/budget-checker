@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Numeric, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, LargeBinary, Numeric, String
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -62,6 +62,30 @@ class Receipt(Base):
     created_at = Column(DateTime(timezone=True), default=_now)
 
     user = relationship("User", back_populates="receipts")
+    # RCP-9: a photo dies with its receipt, the way User.receipts dies with its user.
+    photo = relationship(
+        "ReceiptPhoto",
+        back_populates="receipt",
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+
+# RCP-6/RCP-7: a NEW table, creatable by Base.metadata.create_all against the
+# existing database with no ALTER to `receipts` — that table is left untouched.
+class ReceiptPhoto(Base):
+    __tablename__ = "receipt_photos"
+
+    id = Column(String, primary_key=True, default=_new_id)
+    receipt_id = Column(
+        String, ForeignKey("receipts.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+    )
+    content_type = Column(String, nullable=False)
+    data = Column(LargeBinary, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=_now)
+
+    receipt = relationship("Receipt", back_populates="photo")
 
 
 class Budget(Base):

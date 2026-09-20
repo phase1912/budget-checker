@@ -1,0 +1,67 @@
+# Solution concept — Receipt photos on expenses
+
+This concept follows from [[prob-1]]: a person recording an expense must be able to attach a receipt photo and open it again from that expense, without leaving the app. The area is greenfield — the code graph holds no expense-photo symbols at all (`query` and `context`/`impact` on `Receipt` returned `found: false`; that is a finding, not a gap in my search). What exists is bare scaffolding: the `Receipt` model (backend/app/models.py:56–64, no image field of any kind), only `health` and `auth` routers registered in `create_app()` (backend/app/main.py:80–81), `Base.metadata.create_all` with no migration tooling (main.py:83), sqlite on a docker volume (`DATABASE_URL: sqlite:////data/budget_checker.db` in docker-compose.yml), a 10-second request timeout middleware (main.py:19), and no expense screens on the frontend (only Landing and NotFound under frontend/src/pages).
+
+## Options considered
+
+### Option A — Do nothing
+Record the decision that this stays a notebook. Costs nothing, gives up the entire outcome: records remain unusable as proof, and — as the problem brief notes — the evidence itself decays as camera rolls get culled. Nothing about the alternative improves while we wait; there is also no competitor pressure or deadline forcing action. Changing our mind later costs nothing, since nothing was built. Honest, but it loses the maker's own success signal (opening a receipt from an expense) entirely.
+
+### Option B — Photo as a blob in the receipts table
+Add a nullable image column (or a small linked table) storing the photo bytes directly in SQLite alongside the `Receipt` row. A new receipts router serves upload (`UploadFile` via FastAPI, which needs `python-multipart` — present in the venv but **not** in the tracked backend requirements; adding it is part of this option's cost) and download endpoints, guarded by the existing auth dependency. No new files, no new paths, no separate lifecycle: deleting the expense deletes the photo by construction, which answers the brief's retention open question for free. Costs: roughly the low end of the 2–4 day appetite; the schema change is the expensive-to-reverse part named in the reversibility answer, and it lands on a live sqlite file with no migration tooling — the maker's existing DB needs a one-time hand-written `ALTER TABLE` or a recreate. Gives up: large-photo headroom (sqlite rows and the 10s timeout cap practical size), and DB growth makes backups heavier. Changing our mind later means moving bytes out of the DB — a migration script against live data.
+
+### Option C — Photo as a file on the existing volume, path in the DB
+The `Receipt` row gains a nullable path/content-type reference; the bytes are written to a directory on the same `/data` volume the backend already owns (a new env-configured path, defaulting under `/data/receipt_photos`). Same upload/download router pair, same auth dependency. Costs: the same day-or-two of router and frontend work plus a little extra for path handling and delete-cleanup (a file unlink on expense deletion). Costs slightly more than B to build. Gives up: atomicity (a crash between file write and commit can leave an orphan file) and backup must now cover two places. Changing our mind later is cheap on the *storage side*, but as written the option still alters the `receipts` table — the one expensive-to-reverse move — because the reference lives on `receipts`.
+
+### Option D — Smallest possible thing: local-device-only photos
+The frontend stores the photo only on the recording device (e.g. IndexedDB keyed by expense id), nothing crosses the network. Costs a day or less. But it fails the stated outcome: the problem is precisely that camera-roll-adjacent storage gets culled, and the goal records "open that photo again from the expense later" on whatever device the expense screen is on. A local-only photo tied to a browser profile is a new version of the same problem.
+
+## Chosen approach
+The maker chose a fourth reading of these options rather than any of them as written: **a new `receipt_photos` table holding the photo bytes, keyed by its own id, with the receipt id as a foreign key cascading the way `User.receipts` already cascades, plus the content type — and no column added to `receipts` at all.** In terms of the options above it takes C's shape (a separate photo record, joined to the receipt) and takes B's storage (bytes in SQLite), and it changes the one thing both took for granted: where the schema change lands.
+
+The maker's reasoning, which decides this:
+
+- **The reference must not be a column on `receipts`.** `create_all` in `create_app()` creates tables that do not exist and does not alter tables that do — a column added to the model simply will not appear, and the first query for it fails against the maker's own data. That was written into this concept's own risk section while C was recommended; the maker is right that the recommendation contradicted its own warning. A new table is created by `create_all` for free on the existing database: no `ALTER TABLE`, no hand-written SQL against live rows, no recreate. The stored schema — the one expensive-to-walk-back decision — is spent on a table this feature creates and owns, not on the table holding every expense ever recorded. Moving bytes to the filesystem later then means adding a path column to `receipt_photos`, cheaply and reversibly.
+- **Bytes in the table, not on the volume.** C's orphan-file risk — a crash between file write and commit — is a whole class of failure: orphan reconciliation, cleanup on delete, backup covering two places. B has no such class: one storage system, one transaction, delete cascades and the bytes go with it. For one user's photos on a 2–4 day appetite, that simplicity wins over filesystem headroom.
+
+Described well enough to design against: an expense screen (new — none exists today, roughly half the work) offers attach at or after recording; the backend accepts a size- and type-limited image into the new table and returns the link; the download endpoint serves it back only to the owning authenticated user. Photo-optional behaviour of existing expenses is unchanged; `backend/tests/test_models.py` must keep passing unmodified, per the problem brief's success metric 2.
+
+Two things the maker wants binding on the design stage, recorded here as decisions the design must make deliberately: **the photo-serving URL shape**, because an `<img>` tag cannot carry a bearer header and solving that by dropping authorization is not available — these are financial documents; and **the 10-second TimeoutMiddleware checked against a real upload at the size limit** rather than assumed comfortable — if it does not fit, the size limit comes down and the middleware does not go up.
+
+## Why not the alternatives
+
+**A (do nothing)** was genuinely on the table given the thin evidence — one user, no tickets — and the low cost of inaction. Rejected because the cost of the fix is small (days, inside appetite), the evidence decays with time in the one direction that matters, and the maker's success signal is concrete and immediately checkable. Waiting buys nothing and loses recoverable history.
+
+**B as written (blob column on `receipts`)** keeps the right storage decision — bytes in SQLite, no orphan files — but spends the expensive-to-reverse move on the wrong table: a column added to the live `receipts` table does not appear under `create_all` and needs hand-written SQL against real data. The chosen approach is B's storage with B's schema change relocated to a table `create_all` can create. Nothing of B's argument is lost; its one real cost (schema surgery on live rows) is exactly what is avoided.
+
+**C as written (bytes on the volume)** was this concept's recommendation, and the maker overrode it with reasons rather than taste. Its advantages — filesystem headroom, cheap walk-back on the storage side — stand, but it carried the same flaw as B (the reference column on `receipts`) and it imported the orphan-file failure class the chosen approach eliminates. Its walk-back advantage survives in the chosen approach anyway, via the new-table asymmetry described above.
+
+**D (device-local only)** the maker endorsed rejecting, for the reason given: a photo tied to one browser profile recreates the exact fragility (storage culled outside the app) the feature exists to remove, and breaks the reopen-from-the-expense-screen expectation across devices or after browser data clearing.
+
+## Constraints
+
+- Must run under the existing docker-compose with the backend writing SQLite to `/data/budget_checker.db` on a named volume; no object store, no second service, no cloud account — one `docker compose up` on the maker's laptop. (answer to `constraints`) The chosen approach respects this — SQLite blob storage adds nothing to the deployment.
+- One maintainer, a learning project: a plainer solution beats a faster one that needs an unfamiliar dependency to keep working. (answer to `constraints`) One ordinary dependency addition (`python-multipart`) is carried; the storage itself is the plainest possible — the database the project already runs.
+- Photos are personal financial documents for one authenticated user; they must not be reachable by anyone else, and the existing PyJWT/bcrypt auth is what must carry that — including at the `<img>` tag, which the design stage must solve without dropping authorization. (answer to `constraints`)
+- Appetite: days, not weeks — roughly two to four days; rules out new infrastructure or a migration framework. (answer to `appetite`) The chosen approach needs neither: it is precisely a way to change the schema without migration tooling.
+- Reversibility: storage location, limits, content types and presentation are cheap to change; the stored schema and the served photo URL shape are expensive and deserve care now. (answer to `reversibility`) The chosen approach is built around this: the schema change lands on a table the feature owns, keeping `receipts` untouched.
+
+## Assumptions
+
+- "Expense" means the existing `Receipt` model rather than a distinct Expense concept — *cheap to check now*, and checked as far as the repo allows: the model exists (backend/app/models.py:56), no distinct Expense symbol exists anywhere in the graph or the tree. The maker's confirmation is still the real check; the chosen approach survives either way, since the photo table joins to whichever entity wins.
+- `python-multipart` is absent from the tracked backend requirements — *checked now*: backend/requirements.txt lists fastapi, uvicorn, sqlalchemy, psycopg2-binary, pytest, httpx, bcrypt, PyJWT and email-validator only; it is found nowhere outside `.venv/`. Adding it is a real, small cost of any upload path.
+- A single photo per expense, attached at or after recording time one at a time. *Cheap to check now* with the maker; the problem brief carried it as an open question. The one-photo-per-expense shape is the natural shape of the chosen table design but is not yet confirmed.
+- Photos are small (phone receipts, a few MB): practical under the 10-second timeout middleware — but per the maker's binding requirement, this is *to be tested*, not assumed: one real upload at the size limit against the deployed compose stack.
+- One active user is the whole user base for the foreseeable future. *Only discoverable later*, and low-stakes given the constraints.
+
+## Risks
+
+- **Serving bytes through the same 10-second timeout could fail for large photos.** The maker has bound the response: verify with a real upload at the size limit; if it does not fit, the size limit comes down and the middleware does not go up.
+- **The photo URL becomes an interface** the frontend and any saved record depend on, and an `<img>` tag cannot carry a bearer header. Mitigation is not code: the URL shape and its authorization story are decided once, deliberately, at design — and dropping authorization is not an option.
+- **Blob growth couples photo size to DB size and backup weight forever.** Accepted for one user at this appetite; the walk-back (a path column on a table this feature owns, plus a copy job) is cheap precisely because of the new-table choice.
+- **Wrong assumption on "expense" = `Receipt`.** If the maker intends a distinct Expense concept, the backend surface grows, though the storage approach survives unchanged. Early signal: the requirements stage.
+- **Sqlite practical blob limits** (default page/limit settings, single-writer contention on upload) are untested here. Early signal: the same upload test that checks the timeout; both are checkable in the first code session.
+
+## Out of scope
+
+Carried from the problem brief: no OCR or reading anything off the photo; no bulk camera-roll import; no sharing or exporting receipts; no multiple photos per expense; no storage backend beyond what the repo already runs; no expense summarisation/reporting. Additionally excluded by this choice: any schema change to the existing `receipts` table (no added column, no `ALTER TABLE` against live data), any filesystem or object-store photo storage, any second storage service or cloud bucket, and any counter/metric for receipt-photo coverage.
