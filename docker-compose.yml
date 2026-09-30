@@ -1,6 +1,12 @@
 services:
   backend:
     build: ./backend
+    # Fix for fix-docker-bcrypt-missing (root_cause#114): a bare `docker compose up`
+    # used to reuse a stale, cached backend image built before `bcrypt` was added
+    # to requirements.txt, crashing at startup with ModuleNotFoundError. `build`
+    # pull_policy forces the image to be rebuilt from the current tree on every
+    # `up`, so a dependency added to requirements.txt can never be missing.
+    pull_policy: build
     ports:
       - "8000:8000"
     environment:
