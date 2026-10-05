@@ -40,3 +40,21 @@ class RefreshTokenRequest(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+# Budgets (BUD-1..BUD-11): typed request/response schemas. Unlike the receipts
+# list endpoint (raw dicts, response_model=None), the budget summary is a
+# structured payload with a duplication flag (BUD-10), so it gets a real
+# response model.
+class BudgetCreate(BaseModel):
+    period: str
+    target_amount: float
+
+
+class BudgetSummaryResponse(BaseModel):
+    period: str
+    target_amount: float
+    spent: float
+    remaining: float
+    over: bool
+    duplicate_rows: bool = False
